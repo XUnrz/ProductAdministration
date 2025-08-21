@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录后台</title>
+    <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.css">
+</head>
+<body>
+    <div class="container-md" style="margin-top: 2rem;">
+        <h1 class="text-center">登录后台</h1>
+    </div>
+    <div class="container-md">
+        <form method="post">
+            <div class="mb-3">
+            <label for="username" class="form-label">用户名</label>
+            <input type="text" class="form-control" id="username" name="username">
+            </div>
+            <div class="mb-3">
+            <label for="password" class="form-label">密码</label>
+            <input type="password" class="form-control" id="password" name="password">
+            </div>
+            <!-- <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="remember">
+            <label class="form-check-label" for="remember">记住我</label>
+            </div> -->
+            <button type="submit" class="btn btn-primary">登录</button>
+        </form>
+    </div>
+</body>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+          alert("{{ messages[0] }}");
+      });
+    </script>
+  {% endif %}
+{% endwith %}
+</html>

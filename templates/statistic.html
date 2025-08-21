@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block body %}
+    <div class="container-md">
+        <div class="container px-4">
+        <div class="row gx-3">
+        <div class="col-md">
+        <div class="p-3 border bg-light">当前共有{{ kinds }}种商品</div>
+        </div>
+        <div class="col-md">
+        <div class="p-3 border bg-light">当前剩余货物：{{ total_quantity }}</div>
+        </div>
+        <div class="col-md">
+        <div class="p-3 border bg-light">
+            本月总计销售xxx盒
+            总销售金额：xxx
+        </div>
+        </div>
+        </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}
+设置 - 用户管理
+{% endblock %}
+
+{% block body %}
+{% if current_user.type == "admin" %}
+<div class="container-md">
+    <p class="h3">用户管理</p>
+    <br>
+    <table class="table table-striped-columns">
+    <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+      <div class="btn-group me-2" role="group" aria-label="First group">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newUser">新建用户</button>
+      </div>
+    </div>
+    <br>
+  <thead>
+    <tr>
+      <th scope="col">ID</th>
+      <th scope="col">用户名</th>
+      <th scope="col">用户类型</th>
+      <th scope="col">操作</th>
+    </tr>
+  </thead>
+  <tbody id="product" style="padding: 1rem;">
+    {% for user in users %}
+    <tr>
+      <th scope="row" id="userId">{{ user.id }}</th>
+      <td>{{ user.username }}</td>
+      <td>{{ user.type }}</td>
+      <td style="width: 10rem;">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#changeInfo">修改</button>
+        <button type="button" class="btn btn-primary" id="deleteUser" onclick="deleteUser({{ user.id }})">删除</button>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<!-- 模态框-新建用户 -->
+<div class="modal fade" id="newUser" tabindex="-1" aria-labelledby="newUser" aria-hidden="true">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header">
+  <h5 class="modal-title" id="newUser">新建用户</h5>
+  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+  <div class="mb-3">
+    <label class="form-label">用户类型</label>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="stockOperation" id="admin" value="admin" checked>
+      <label class="form-check-label" for="admin">
+        管理员
+      </label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="stockOperation" id="default" value="default">
+      <label class="form-check-label" for="default">
+        普通用户
+      </label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="stockOperation" id="disabled" value="disabled">
+      <label class="form-check-label" for="disabled">
+        已禁用
+      </label>
+    </div>
+  </div>
+  <div class="mb-3">
+  <label for="username" class="form-label">输入用户名</label>
+  <input type="text" class="form-control" id="username">
+  </div>
+  <div class="mb-3">
+  <label for="password" class="form-label">输入密码</label>
+  <input type="password" class="form-control" id="password">
+  </div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+  <button type="submit" class="btn btn-primary" id="submitNewUser">提交</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  function deleteUser(id) {
+    if (confirm("确定要删除该用户吗？")) {
+        fetch('/settings/user_managment/delete_user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({id: id})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                alert("删除成功");
+                // 从页面中移除该用户行
+                location.reload(); // 或者动态移除DOM元素
+            } else {
+                alert("删除失败：" + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("删除过程中发生错误");
+        });
+    }
+}
+  $('#submitNewUser').click(function() {
+    var username = $('#username').val();
+    var password = $('#password').val();
+    var type = $('input[name="stockOperation"]:checked').val();
+    if (username === '' || password === '') {
+      alert('请填写完整的信息');
+      return;
+    }
+    fetch('/settings/user_managment/new_user', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({username: username, password: password, type: type})
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.code === 400) {
+        alert("添加成功");
+        location.reload(); // 或者动态添加DOM元素
+      } else if (data.code === 200) {
+        alert("添加失败：" + data.message);
+      }
+    }).catch(error => {
+      console.error('Error:', error);
+      alert("添加过程中发生错误");
+    });
+  })
+</script>
+{% else %}
+<div class="container-md">
+    <p class="h3">权限不足</p>
+</div>
+{% endif %}
+{% endblock %}

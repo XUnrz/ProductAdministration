@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}设置 - 客户管理{% endblock %}
+
+{% block body %}
+<div class="container-md">
+    <p class="h3">客户管理</p>
+    <br>
+    <table class="table table-striped-columns">
+    <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+      <div class="btn-group me-2" role="group" aria-label="First group">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#importCustomer">导入客户数据</button>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exportCustomer">导出客户数据</button>
+      </div>
+    </div>
+    <br>
+  <thead>
+    <tr>
+      <th scope="col">微信ID</th>
+      <th scope="col">客户名</th>
+      <th scope="col">客户微信名</th>
+      <th scope="col">客户电话</th>
+      <th scope="col">客户类型</th>
+      <th scope="col">操作</th>
+    </tr>
+  </thead>
+  <tbody id="product" style="padding: 1rem;">
+    <tr>
+      <th scope="row" id="wechatId">xxx</th>
+      <td>xxx</td>
+      <td>xxx</td>
+      <td>xxx</td>
+      <td>xxx</td>
+      <td style="width: 7rem;">
+        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#changeInfo">修改</button>
+        <button type="button" class="btn btn-primary btn-sm" id="deleteCustomer" onclick="deleteCustomer()">删除</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</div>
+{% endblock %}

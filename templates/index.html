@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}首页{% endblock %}
+
+{% block body %}
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<div class="container-md">
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+<strong>{{ messages[0] }}</strong><br>
+<strong>{{ messages[1] }}</strong>
+<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+</div>
+{% endif %}
+{% endwith %}
+<div class="container-md">
+    <div class="row">
+    <div class="card" style="width: 20rem;margin: 1rem;">
+        <div class="card-body">
+            <h5 class="card-title">商品总览</h5>
+            <p class="card-text">
+                现有商品种类：{{ kinds }}<br>
+                现有商品总数量：{{ quantity }}<br>
+                现有商品总价值：{{ price }}<br>
+            </p>
+            <a href="/product" class="btn btn-primary">查看详情</a>
+        </div>
+    </div>
+    <div class="card" style="width: 20rem;margin: 1rem;">
+        <div class="card-body">
+            <h5 class="card-title">当月统计</h5>
+            <p class="card-text">
+                截止到：xxx<br>
+                本月销售总数：xxx<br>
+                本月销售总额：xxx<br>
+            </p>
+            <a href="#" class="btn btn-primary disabled" tabindex="-1" role="button" aria-disabled="true">查看详情</a>
+        </div>
+    </div>
+    <div class="card" style="width: 20rem;margin: 1rem;">
+        <div class="card-body">
+            <h5 class="card-title">借还货统计</h5>
+            <p class="card-text">
+                借出商品数量：xxx<br>
+                已归还商品数量：xxx<br>
+                长期未还商品数量：xxx<br>
+            </p>
+            <a href="#" class="btn btn-primary disabled" tabindex="-1" role="button" aria-disabled="true">查看详情（已弃用）</a>
+        </div>
+    </div>
+    </div>
+</div>
+
+
+{% endblock %}

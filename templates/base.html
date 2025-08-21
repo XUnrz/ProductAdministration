@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,
+      initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="../static/bootstrap/css/bootstrap.css">
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+  </head>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+<div class="container-fluid">
+<a class="navbar-brand" href="/">商品管理系统</a>
+<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+<span class="navbar-toggler-icon"></span>
+</button>
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+  <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+    <li class="nav-item">
+      <a class="nav-link" href="/product">商品管理</a>
+    </li>
+    <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        库存管理
+      </a>
+      <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+        <li><a class="dropdown-item disabled" href="#">借还货（弃用）</a></li>
+        <li><a class="dropdown-item" href="/stock/statistic">统计</a></li>
+        <li><a class="dropdown-item" href="/stock/history">盘点</a></li>
+        <li><a class="dropdown-item" href="/stock/history">报表生成</a></li>
+      </ul>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">借还货统计（弃用）</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/purchace">下单</a>
+    </li>
+    <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        设置
+      </a>
+      <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+        <li><a class="dropdown-item" href="/settings/user_managment">用户管理</a></li>
+        <li><a class="dropdown-item" href="/settings/customer_managment">客户管理</a></li>
+        <li><a class="dropdown-item" href="/settings/backup">自动备份</a></li>
+        <li><a class="dropdown-item" href="/settings/profile">个人信息</a></li>
+      </ul>
+    </li>
+  </ul>
+<form class="d-flex" method="post" action="/logout">
+  <p style="margin: auto 1rem auto auto;">欢迎你，{{ current_user.username }}</p>
+  <button type="submit" class="btn btn-primary">退出</button>
+</form>
+</div>
+</div>
+</nav>
+    <br>
+  {% block body %}
+  {% endblock %}
+  </body>
+  <!-- <script src="../static/bootstrap/js/bootstrap.js"></script> -->
+  <!-- <script src="../static/bootstrap/js/bootstrap.bundle.js"></script> -->
+  <script src="../static//bootstrap/js/bootstrap.bundle.min.js"></script>
+</html>

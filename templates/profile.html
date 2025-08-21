@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}设置 - 个人信息{% endblock %}
+
+{% block body %}
+<div class="container-md">
+    <p class="h3">个人中心</p>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="username" class="form-label">用户名</label>
+                <input type="text" class="form-control" id="username" name="username" value="{{ current_user.username }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">新密码</label>
+                <input type="password" class="form-control" id="password" name="password">
+                <div class="form-text">留空则不修改密码</div>
+            </div>
+            <div class="mb-3">
+                <label for="confirm_password" class="form-label">确认新密码</label>
+                <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+            </div>
+            <button type="submit" class="btn btn-primary" onclick="changeInfo()">保存更改</button>
+        </div>
+    </div>
+</div>
+<script>
+    function changeInfo() {
+        // 校验两次密码是否一样
+        if ($('#password').val() !== $('#confirm_password').val()) {
+            alert('两次密码不一致');
+            return;
+        }
+        // 发送请求
+        var data = {
+            username: $('#username').val(),
+            password: $('#password').val(),
+        }
+        fetch('/settings/profile/change', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.code === 400) {
+                alert("修改成功");
+                location.reload(); // 或者动态添加DOM元素
+            } else if (data.code === 200) {
+                alert("修改失败：" + data.message);
+            }
+        }).catch(error => {
+            console.error('Error:', error);
+            alert("修改过程中发生错误:"+error);
+        });
+    }
+</script>
+{% endblock %}

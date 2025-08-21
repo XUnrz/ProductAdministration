@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}设置 - 自动备份{% endblock %}
+
+{% block body %} 
+<div class="container-md">
+    {% if current_user.type == 'admin' %}
+    <p class="h3">自动备份</p>
+    {% if config.AUTO_BACKUP %}
+    <div class="form-check form-switch">
+    <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" checked>
+    <label class="form-check-label" for="flexSwitchCheckChecked">自动备份开关</label>
+    </div>
+    {%else%}
+    <div class="form-check form-switch">
+    <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
+    <label class="form-check-label" for="flexSwitchCheckDefault">自动备份开关</label>
+    </div>
+    {% endif %}
+    <button type="button" class="btn btn-primary" onclick="manual_bakcup()">手动备份</button>
+    {%else%}
+    <p class="h3">权限不足</p>
+    {% endif %}
+</div>
+</div>
+
+<script>
+    function manual_bakcup() {
+        fetch('/settings/auto_backup/manual_backup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.code === 400) {
+                alert("已发送命令");
+            } else if (data.code === -1) {
+                alert("备份失败：" + data.message);
+            }
+        })
+    }
+    $(".form-check-input").change(function() { 
+        // 获取当前状态
+        var checked = $(this).prop("checked");
+        // 如果勾选了
+        if (checked) { 
+            fetch('/settings/auto_backup/enable', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+        } else {
+            fetch('/settings/auto_backup/disable', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+        }
+    });
+</script>
+
+{% endblock %}

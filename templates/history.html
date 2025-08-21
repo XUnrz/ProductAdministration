@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}
+盘点
+{% endblock %}
+
+{% block body %}
+<div class="container-md">
+    <p class="h3">盘点</p>
+    <br>
+    <!-- 利用表格显示历史数据 -->
+     <table class="table table-bordered">
+      <thead>
+    <tr>
+      <th scope="col">操作时间</th>
+      <th scope="col">操作商品</th>
+      <th scope="col">操作类型</th>
+      <th scope="col">数量</th>
+      <!-- {% if current_user.type == "admin" %}
+      <th scope="col">操作</th>
+      {% endif %} -->
+    </tr>
+  </thead>
+  <tbody id="history" style="padding: 1rem;">
+    {% if not history %}
+    <tr>
+      <th scope="row" colspan="5" style="text-align: center;">暂无数据</th>
+    </tr>
+    {% else %}
+    {% for his in history %}
+    <tr>
+      <th scope="row" id="historyTime">{{ his.time }}</th>
+      <td>{{ his.product_name }}</td>
+      <td>
+        {% if his.type == "in"  %}
+        入库
+        {% elif his.type == "out" %}
+        出库
+        {% endif %}
+      </td>
+      <td>{{ his.amount }}</td>
+      <!-- {% if current_user.type == "admin" %}
+      <td style="width: 10rem;">
+        <button type="button" class="btn btn-primary" id="deleteHIst" onclick="deleteProduct()">删除</button>
+      </td>
+      {% endif %} -->
+    </tr>
+    {% endfor %}
+    {% endif %}
+  </tbody>
+     </table>
+    
+</div>
+{% endblock %}

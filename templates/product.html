@@ -1,0 +1,352 @@
+{% extends "base.html" %}
+{% block title %}商品管理{% endblock %}
+{% block body %}
+<div class="container">
+  <table class="table table-striped-columns">
+    {% if current_user.type == "admin" %}
+    <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+      <div class="btn-group me-2" role="group" aria-label="First group">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newProduct">新建商品</button>
+        <button type="button" class="btn btn-primary" disabled>批量操作</button>
+      </div>
+      <div class="btn-group me-2" role="group" aria-label="Second group">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#StockModal">出/入库</button>
+      </div>
+      <div class="btn-group" role="group" aria-label="Third group">
+        <button type="button" class="btn btn-primary" onclick="undo()">撤销</button>
+        <!-- <button type="button" class="btn btn-primary">重做</button> -->
+      </div>
+    </div>
+    {% else %}
+    <p class="h3">
+      核对信息
+    </p>
+    <div class="btn-group" role="group" aria-label="Third group">
+        <button type="button" class="btn btn-primary">信息无误</button>
+        <button type="button" class="btn btn-primary">信息有误</button>
+      </div>
+    {% endif %}
+    <br><br>
+  <thead>
+    <tr>
+      <th scope="col">ID</th>
+      <th scope="col">商品名称</th>
+      <th scope="col">库存</th>
+      {% if current_user.type == "admin" %}
+      <th scope="col">操作</th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody id="product" style="padding: 1rem;">
+    {% if not products %}
+    <tr>
+      <th scope="row" colspan="5" style="text-align: center;">暂无数据</th>
+    </tr>
+    {% else %}
+    {% for product in products %}
+    <tr>
+      <th scope="row" id="productId">{{ product.id }}</th>
+      <td>{{ product.name }}</td>
+      <td>{{ product.quantity }}</td>
+      {% if current_user.type == "admin" %}
+      <td style="width: 10rem;">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#changeInfo">修改</button>
+        <button type="button" class="btn btn-primary" id="deleteProduct" onclick="deleteProduct()">删除</button>
+      </td>
+      {% endif %}
+    </tr>
+    {% endfor %}
+    {% endif %}
+  </tbody>
+</table>
+</div>
+
+{% if current_user.type == "admin" %}
+<!-- 模态框-新建商品 -->
+<div class="modal fade" id="newProduct" tabindex="-1" aria-labelledby="NewProduct" aria-hidden="true">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header">
+  <h5 class="modal-title" id="NewProduct">新建商品</h5>
+  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+  <!-- 输入商品详情信息 -->
+  <div class="form-floating mb-3">
+  <input type="text" class="form-control" id="productName" placeholder="输入商品名">
+  <label for="productName">输入商品名</label>
+  </div>
+  <div class="form-floating mb-3">
+  <input type="number" class="form-control" id="stock" placeholder="输入库存">
+  <label for="stock">输入库存</label>
+  </div>
+  <div class="form-floating mb-3">
+  <input type="number" class="form-control" id="price1" placeholder="输入进货价">
+  <label for="price1">输入进货价</label>
+  </div>
+  <div class="form-floating mb-3">
+  <input type="number" class="form-control" id="price2" placeholder="输入零售价">
+  <label for="price2">输入零售价</label>
+  </div>
+  <div class="form-floating mb-3">
+  <input type="number" class="form-control" id="price3" placeholder="输入vip价">
+  <label for="price3">输入vip价</label>
+  </div>
+  <div class="form-floating mb-3">
+  <input type="number" class="form-control" id="price4" placeholder="输入市代价">
+  <label for="price4">输入市代价</label>
+  </div>
+  <div class="form-floating mb-3">
+  <input type="number" class="form-control" id="price5" placeholder="输入省代价">
+  <label for="price5">输入省代价</label>
+  </div>
+  <div class="form-floating mb-3">
+  <input type="number" class="form-control" id="price6" placeholder="输入总代价">
+  <label for="price6">输入总代价</label>
+  </div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+  <button type="submit" class="btn btn-primary" onclick="newProducts()">提交</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 模态框-修改商品信息 -->
+<div class="modal fade" id="changeInfo" tabindex="-1" aria-labelledby="ChangeInfo" aria-hidden="true">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header">
+  <h5 class="modal-title" id="ChangeInfo">修改商品信息</h5>
+  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+  <!-- TODO: 修改商品信息+获取信息 -->
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+  <button type="submit" class="btn btn-primary" onclick="changeInfo()">提交</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 模态框-库存操作(入库/出库) -->
+<div class="modal fade" id="StockModal" tabindex="-1" aria-labelledby="StockModal" aria-hidden="true">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header">
+  <h5 class="modal-title" id="StockModal">库存操作</h5>
+  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+  <div class="mb-3">
+    <label class="form-label">操作类型</label>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="stockOperation" id="inStock" value="in" checked>
+      <label class="form-check-label" for="inStock">
+        入库
+      </label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="stockOperation" id="outStock" value="out">
+      <label class="form-check-label" for="outStock">
+        出库
+      </label>
+    </div>
+  </div>
+  <div class="mb-3">
+    <label for="StockSelection" class="form-label">选择商品</label>
+    <select class="form-select" aria-label="StockSelection" id="StockSelection">
+  </select>
+  </div>
+  <div class="mb-3">
+  <label for="StockNum" class="form-label">输入数量</label>
+  <input type="number" class="form-control" id="StockNum">
+  </div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+  <button type="submit" class="btn btn-primary" id="stockOperation">提交</button>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+function newProducts() {
+    // 获取输入的商品名和库存
+    var productModal = new bootstrap.Modal(document.getElementById('newProduct'))
+    var productName = document.getElementById('productName').value;
+    var stock = document.getElementById('stock').value;
+    var price1 = document.getElementById('price1').value;
+    var price2 = document.getElementById('price2').value;
+    var price3 = document.getElementById('price3').value;
+    var price4 = document.getElementById('price4').value;
+    var price5 = document.getElementById('price5').value;
+    var price6 = document.getElementById('price6').value;
+
+    // 更换数据类型
+    stock = parseInt(stock);
+    price1 = parseFloat(price1);
+    price2 = parseFloat(price2);
+    price3 = parseFloat(price3);
+    price4 = parseFloat(price4);
+    price5 = parseFloat(price5);
+    price6 = parseFloat(price6);
+    // 这里可以添加AJAX请求或其他逻辑来处理新建商品
+    // 传回后端
+    fetch('/product/add', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: productName,
+        stock: stock,
+        price1: price1,
+        price2: price2,
+        price3: price3,
+        price4: price4,
+        price5: price5,
+        price6: price6
+      })
+    }).then(function(response) { 
+      response.json().then(function(data) { 
+        if (data.code == 200) {
+          alert('添加成功！');
+          window.location.reload();
+        } else if (data.code == 400) {
+          alert('有相同商品！');
+        } else {
+          alert('添加失败！');
+        }
+      });
+})
+    
+  }
+
+function deleteProduct() {
+  if (confirm("确定要删除该商品吗？")) {
+    var button = event.target;
+    var row = button.closest('tr');
+    var id = row.querySelector('#productId').innerText;
+
+    parseInt(id);
+
+    console.log(id);
+    
+
+    fetch('/product/delete', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        id: id
+      })
+    }).then(function(response) {
+      return response.json();
+}).then(function(data) {
+      if (data.code == 200) {
+        alert('删除成功！');
+        window.location.reload();
+      } else {
+        alert('删除失败！');
+      }
+    });
+  }
+}
+
+// 新增库存操作功能
+document.addEventListener('DOMContentLoaded', function() {
+  var stockModal = document.getElementById('StockModal');
+  stockModal.addEventListener('show.bs.modal', function () {
+    var selection = document.getElementById("StockSelection");
+    var product = document.getElementById("product");
+
+    if (product.children[0].innerText === "暂无数据") {
+        selection.disabled = true;
+        selection.innerHTML = "<option selected>暂无数据</option>";
+    } else {
+      // 获取数据
+      selection.innerHTML = "<option selected disabled hidden>选择商品</option>";
+      for (var i = 0; i < product.children.length; i++) {
+          selection.innerHTML += '<option value="'+product.children[i].children[0].innerText+'">' + product.children[i].children[1].innerText + "</option>";
+      }
+    }
+  });
+
+  // 库存操作提交
+  document.getElementById("stockOperation").addEventListener("click", function() {
+    var operation = document.querySelector('input[name="stockOperation"]:checked').value;
+    var productId = document.getElementById("StockSelection").value;
+    var quantity = document.getElementById("StockNum").value;
+
+    if (!productId || productId === "暂无数据") {
+      alert("请选择商品");
+      return;
+    }
+
+    if (!quantity || quantity <= 0) {
+      alert("请输入有效的数量");
+      return;
+    }
+
+    var endpoint = operation === "in" ? "/product/in" : "/product/out";
+
+    fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        "id": productId,
+        "num": quantity
+      })
+    }).then(function(response) {
+      return response.json();
+    }).then(function(data) {
+      if (data.code == 200) {
+        alert(operation === "in" ? "入库成功！" : "出库成功！");
+        window.location.reload();
+      } else if (data.code == 400) {
+        alert("没有这个商品！");
+      } else {
+        alert("操作失败！");
+      }
+    }).catch(function(error) {
+      console.error('Error:', error);
+      alert("操作失败！");
+    });
+  });
+});
+
+function undo() {
+  if (confirm("确定要撤销此操作吗？")){
+    fetch('/product/undo', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })
+    .then(function(response) {
+      return response.json();
+    }).then(function(data) {
+      if (data.code == 200) {
+        alert("操作成功！");
+        location.reload();
+      } else if (data.code == -2) {
+        alert("没有历史记录！");
+      } else {
+        alert("操作失败！");
+      }
+    })
+  }
+  
+}
+
+</script>
+{% endif %}
+{% endblock %}
