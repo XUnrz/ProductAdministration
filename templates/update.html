@@ -1,10 +1,40 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}
+设置 - 软件更新
+{% endblock %}
+{% block body %}
+    <div class="container-md">
+        <p class="h3">
+            在线更新
+        </p>
+        <p class="h6">
+            当前软件版本：{{ ver }}
+            <button type="button" class="btn btn-primary" onclick="checkUpdate()" id="check">检查更新</button>
+        </p>
+    </div>
+<script>
+    function checkUpdate() {
+        // 获取按钮
+        btn = document.getElementById("check")
+        // 禁用按钮
+        btn.disabled = true
+        //在按钮中添加span
+        btn.innerHTML = "<span class='spinner-border spinner-border-sm' role='status' aria-hidden='true'></span>" + "检查更新"
+        fetch('/settings/update/check')
+        .then(response => response.json())
+        .then(data => {
+        }).catch(error => {
+            console.error('Error:', error);
+            alert("检查过程中发生错误:"+error);
+        });
+        setTimeout(function() {
+            // 启用按钮
+            btn.disabled = false
+            // 移除span
+            btn.innerHTML = "检查更新"
+            // 弹出提示
+            alert("检查完成")
+        }, 3000);
+    }
+</script>
+{% endblock %}

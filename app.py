@@ -1,8 +1,8 @@
-from flask import Flask,render_template,request,redirect,url_for,flash
-import config,ProductORM,UsersORM,HistoryORM
-import datetime,backup
+from flask import Flask, render_template, request, redirect, url_for, flash
+import config, ProductORM, UsersORM, HistoryORM
+import datetime, backup
 from extension import init_ext
-from flask_login import LoginManager,login_user,current_user,logout_user,login_required
+from flask_login import LoginManager, login_user, current_user, logout_user, login_required
 
 app = Flask(__name__)
 app.config.from_object(config)
@@ -17,11 +17,13 @@ with app.app_context():
 # 默认启用自动备份
 print(backup.start_backup_thread())
 
+
 # 用户回调函数
 @login_manager.user_loader
 def load_user(user_id):
     """根据用户id获取用户"""
     return UsersORM.Users.query.get(int(user_id))
+
 
 # 主页
 @app.route('/')
@@ -44,13 +46,14 @@ def index():
             alert2 += product.name + ' '
     # 显示库存不足信息
     if alert1 and alert2:
-        flash(alert1+'已欠货')
-        flash(alert2+'已无库存')
+        flash(alert1 + '已欠货')
+        flash(alert2 + '已无库存')
     elif alert1:
-        flash(alert1+'已欠货')
+        flash(alert1 + '已欠货')
     else:
-        flash(alert2+'已无库存')
-    return render_template('index.html',kinds=kinds,quantity=quantity,price=total_price)
+        flash(alert2 + '已无库存')
+    return render_template('index.html', kinds=kinds, quantity=quantity, price=total_price)
+
 
 # 登录页
 @app.route('/login', methods=['GET', 'POST'])
@@ -71,12 +74,14 @@ def login():
             return redirect(url_for('login'))
     return render_template('login.html')
 
+
 # 退出
-@app.route('/logout' ,methods=['POST'])
+@app.route('/logout', methods=['POST'])
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('login'))
+
 
 # 商品列表
 @app.route('/product')
@@ -99,7 +104,8 @@ def product():
             'quantity': product.quantity
         })
     # print(products_lst)
-    return render_template('product.html',products=products)
+    return render_template('product.html', products=products)
+
 
 # 库存管理
 @app.route('/stock/statistic')
@@ -113,13 +119,16 @@ def stock():
     total_price = sum([(product.price1 * product.quantity) for product in products])
     # 获取当月销售数据，利用history数据库查询本月的出库数量
     current_month = datetime.datetime.now().month
-    sell_products = ProductORM.Product.query.filter(HistoryORM.History.time >= datetime.datetime(datetime.datetime.now().year, current_month, 1)).all()
+    sell_products = ProductORM.Product.query.filter(
+        HistoryORM.History.time >= datetime.datetime(datetime.datetime.now().year, current_month, 1)).all()
     # 计算本月销售数量和金额
     sell_quantity = sum([product.quantity for product in sell_products])
     # 此处无法计算total_price，需要结合客户类型
     # sell_price = sum([(product.price1 * product.quantity) for product in sell_products])
     # print(products_lst)
-    return render_template('statistic.html',products=products,total_quantity=total_quantity,total_price=total_price,kinds=kinds)
+    return render_template('statistic.html', products=products, total_quantity=total_quantity, total_price=total_price,
+                           kinds=kinds)
+
 
 # 盘点
 @app.route('/stock/history')
@@ -130,7 +139,8 @@ def stock_history():
     # 筛选type为in和out
     history = [history for history in history if (history.type == 'in' or history.type == 'out')]
     print(history)
-    return render_template('history.html',history=history)
+    return render_template('history.html', history=history)
+
 
 # 下单
 @app.route('/purchace')
@@ -140,7 +150,8 @@ def purchace():
     products = ProductORM.Product.query.all()
     # 获取所有客户（暂时没用）
     # customers = UsersORM.Users.query.filter_by(type='customer').all()
-    return render_template('purchace.html',products=products)
+    return render_template('purchace.html', products=products)
+
 
 # 设置部分
 # 用户管理
@@ -149,7 +160,8 @@ def purchace():
 def user():
     # 获取所有用户
     users = UsersORM.Users.query.all()
-    return render_template('user.html',users=users)
+    return render_template('user.html', users=users)
+
 
 # 客户管理
 @app.route('/settings/customer_managment')
@@ -158,18 +170,35 @@ def customer():
     # 此处先查询数据库中的客户数据，如果没有则连接wcferry获取，此处先pass
     return render_template('customer.html')
 
+
 # 个人信息
 @app.route('/settings/profile')
 @login_required
 def profile():
     return render_template('profile.html')
 
+
 # 备份管理
 @app.route('/settings/backup')
 @login_required
 def settings_backup():
     import backup_config
-    return render_template('backup.html',config=backup_config)
+    return render_template('backup.html', config=backup_config)
+
+
+# 在线升级（更新后台上载完整zip包，支持连接ota服务器升级和上传zip升级）
+'''
+模拟更新程序位于/update中
+'''
+
+
+@app.route('/settings/update', methods=['POST', 'GET'])
+def settings_update():
+    if request.method == 'POST':  # 前端请求
+        pass
+    elif request.method == 'GET':  # 后端回传请求
+        return render_template('update.html', ver=config.app_ver)
+
 
 # 添加商品(私有api)
 @app.route('/product/add', methods=['POST'])
@@ -196,9 +225,9 @@ def product_add():
             }
         else:
             # 创建商品
-            product = ProductORM.Product(name=name, quantity=quantity, price1=price1, 
-                                        price2=price2, price3=price3, price4=price4,
-                                        price5=price5, price6=price6)
+            product = ProductORM.Product(name=name, quantity=quantity, price1=price1,
+                                         price2=price2, price3=price3, price4=price4,
+                                         price5=price5, price6=price6)
             # 保存数据以产生id
             product.save()
             # 创建历史记录
@@ -218,8 +247,9 @@ def product_add():
             'code': -1
         }
 
+
 # 删除商品(私有api)
-@app.route('/product/delete', methods=['POST']) 
+@app.route('/product/delete', methods=['POST'])
 @login_required
 def product_delete():
     data = request.get_json()
@@ -228,7 +258,8 @@ def product_delete():
         product = ProductORM.Product.query.filter_by(id=id).first()
         if product:
             with app.app_context():
-                history = HistoryORM.History(datetime.datetime.now(), product.id, product.name, current_user.id, 'delete', 0)
+                history = HistoryORM.History(datetime.datetime.now(), product.id, product.name, current_user.id,
+                                             'delete', 0)
                 history.save()
                 product = ProductORM.Product.query.filter_by(id=id).first()
                 product.delete()
@@ -250,6 +281,7 @@ def product_delete():
             'code': -1
         }
 
+
 # 入库(私有api)
 @app.route('/product/in', methods=['POST'])
 @login_required
@@ -260,7 +292,8 @@ def product_in():
         if product:
             product.quantity += int(data['num'])
             product.save()
-            history = HistoryORM.History(datetime.datetime.now(), data['id'],product.name, current_user.id, 'in', int(data['num']))
+            history = HistoryORM.History(datetime.datetime.now(), data['id'], product.name, current_user.id, 'in',
+                                         int(data['num']))
             history.save()
             return {
                 'status': "success",
@@ -281,6 +314,7 @@ def product_in():
             'msg': str(e),
         }
 
+
 # 出库(私有api)
 @app.route('/product/out', methods=['POST'])
 @login_required
@@ -291,7 +325,8 @@ def product_out():
         if product:
             product.quantity -= int(data['num'])
             product.save()
-            history = HistoryORM.History(time=datetime.datetime.now(), product_id=product.id, product_name=product.name, user_id=current_user.id, type="out", amount=int(data['num']))
+            history = HistoryORM.History(time=datetime.datetime.now(), product_id=product.id, product_name=product.name,
+                                         user_id=current_user.id, type="out", amount=int(data['num']))
             history.save()
             return {
                 'status': "success",
@@ -312,6 +347,7 @@ def product_out():
             'msg': str(e),
         }
 
+
 # 删除用户(私有api)
 @app.route('/settings/user_managment/delete_user', methods=['POST'])
 @login_required
@@ -319,7 +355,7 @@ def delete_user():
     data = request.get_json()
     try:
         user_id = data['id']
-        
+
         # 禁止用户删除自己
         if current_user.id == user_id:
             return {
@@ -327,7 +363,7 @@ def delete_user():
                 'message': "不能删除当前登录用户",
                 'code': 400
             }
-        
+
         user = UsersORM.Users.query.filter_by(id=user_id).first()
         if user:
             # 先删除用户，再返回成功消息
@@ -359,6 +395,7 @@ def delete_user():
             'code': 400
         }
 
+
 # 新建用户(私有api)
 @app.route('/settings/user_managment/new_user', methods=['POST'])
 @login_required
@@ -388,6 +425,7 @@ def new_user():
             'code': -1
         }
 
+
 # 商品管理页的撤销操作
 @app.route('/product/undo', methods=['POST'])
 @login_required
@@ -395,7 +433,8 @@ def undo():
     if request.method == 'POST':
         # 查询历史记录数据库中最后一次的出库或者入库操作
         # 仅可以撤回该用户的操作
-        history = HistoryORM.History.query.filter_by(user_id=current_user.id).order_by(HistoryORM.History.id.desc()).first()
+        history = HistoryORM.History.query.filter_by(user_id=current_user.id).order_by(
+            HistoryORM.History.id.desc()).first()
         # 检查是否有历史记录
         if history is None:
             return {
@@ -416,6 +455,8 @@ def undo():
             'status': 'success',
             'message': '撤销成功'
         }
+
+
 # 用户修改用户名和密码
 @app.route('/settings/profile/change', methods=['POST'])
 @login_required
@@ -451,6 +492,7 @@ def change_user():
             'code': -1
         }
 
+
 # 手动备份
 @app.route('/settings/auto_backup/manual_backup', methods=['POST'])
 @login_required
@@ -471,6 +513,7 @@ def start_manual_backup():
             'message': "内部错误",
             'code': -1
         }
+
 
 # 启动定时备份
 @app.route('/settings/auto_backup/enable', methods=['POST'])
@@ -495,6 +538,7 @@ def start_auto_backup():
             'message': "内部错误",
             'code': -1
         }
+
 
 # 关闭定时备份
 @app.route('/settings/auto_backup/disable', methods=['POST'])
@@ -521,4 +565,4 @@ def stop_auto_backup():
 
 
 if __name__ == '__main__':
-    app.run(port=config.PORT, host=config.HOST,debug=config.Debug)
+    app.run(port=config.PORT, host=config.HOST, debug=config.Debug)
