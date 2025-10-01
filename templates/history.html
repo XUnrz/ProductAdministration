@@ -6,7 +6,15 @@
 {% block body %}
 <div class="container-md">
     <p class="h3">盘点</p>
-    <br>
+    {% if history %}
+    <div class="container-md">
+      <input type="text" name="daterange" value="" />
+      <button type="button" class="btn btn-primary" onclick="Saerch()">查询</button>
+      &nbsp|&nbsp
+      <button type="button" class="btn btn-primary" onclick="Export()">导出表格</button>
+    </div>
+    
+    {% endif %}
     <!-- 利用表格显示历史数据 -->
      <table class="table table-bordered">
       <thead>
@@ -50,4 +58,72 @@
      </table>
     
 </div>
+<script type="text/javascript" src="/static/libs/FileSaver/FileSaver.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+<script>
+  $(function() {
+    $('input[name="daterange"]').daterangepicker({
+      opens: 'left'
+    }, function(start, end, label) {
+      console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
+    });
+  });
+
+  function Saerch() {
+    var start = $('input[name="daterange"]').data('daterangepicker').startDate.format('YYYY-MM-DD');
+    var end = $('input[name="daterange"]').data('daterangepicker').endDate.format('YYYY-MM-DD');
+    var url = '/stock/history/search?start=' + start + '&end=' + end;
+    
+    fetch(url,{
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    .then(response => response.json())
+    .then(data => {
+      data = data.data;
+      console.log(data);
+      
+      // 删除表中数据
+      $('#history').empty();
+      // 向表中添加新数据
+      for (var i = 0; i < data.length; i++) {
+        // 转换时间显示方式Sat, 02 Aug 2025 10:53:27 GMT为2025-08-02 10:53:27
+        var time = data[i].time;
+        split = time.split(' ');
+        time = split[3] + ' ' + split[2] + ' ' + split[1];
+        // 转换in/out显示
+        if (data[i].type == 'in') {
+          data[i].type = '入库';
+        } else if (data[i].type == 'out') {
+          data[i].type = '出库';
+        }
+        var tr = $('<tr></tr>');
+        var th = $('<th scope="row"></th>');
+        var td1 = $('<td></td>');
+        var td2 = $('<td></td>');
+        var td3 = $('<td></td>');
+        // var td4 = $('<td></td>');
+        // var td5 = $('<td></td>');
+        th.text(time);
+        td1.text(data[i].product_name);
+        td2.text(data[i].type);
+        td3.text(data[i].amount);
+        // td4.text(data[i].operator);
+        tr.append(th).append(td1).append(td2).append(td3);
+        $('#history').append(tr);
+
+      }
+    })
+    
+
+  }
+
+  function Export() {
+    $('#history').tableExport({type:'excel'});
+  }
+</script>
 {% endblock %}

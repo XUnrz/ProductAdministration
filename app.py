@@ -140,6 +140,33 @@ def stock_history():
     history = [history for history in history if (history.type == 'in' or history.type == 'out')]
     print(history)
     return render_template('history.html', history=history)
+# 数据查询
+@app.route('/stock/history/search')
+@login_required
+def stock_history_search():
+    # 获取需要查询的时间段
+    start = request.args.get('start')
+    end = request.args.get('end')
+    start = datetime.datetime.strptime(start, '%Y-%m-%d')
+    end = datetime.datetime.strptime(end, '%Y-%m-%d')
+    print(start, end)
+    history = HistoryORM.History.query.filter(HistoryORM.History.time >= start, HistoryORM.History.time <= end).all()
+    print(history)
+    # 解析history为json
+    history = [{
+        'id': history.id,
+        'product_id': history.product_id,
+        'product_name': history.product_name,
+        'time': history.time,
+        'type': history.type,
+        'amount': history.amount
+    } for history in history]
+    return {
+        'status': 'success',
+        'code': 200,
+        'data': history
+    }
+
 
 
 # 下单
