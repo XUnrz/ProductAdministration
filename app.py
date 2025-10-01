@@ -267,7 +267,7 @@ def product_add():
                 'code': 200
             }
     except Exception as r:
-        print(r)
+        # print(r)
         return {
             'status': "error",
             'message': "参数错误",

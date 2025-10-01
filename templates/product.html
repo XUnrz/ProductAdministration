@@ -47,7 +47,9 @@
     <tr>
       <th scope="row" id="productId">{{ product.id }}</th>
       <td>{{ product.name }}</td>
-      <td>{{ product.quantity }}</td>
+      <td>{{ product.quantity }}
+        <!-- <span class="badge bg-warning text-dark">Warning</span> -->
+      </td>
       {% if current_user.type == "admin" %}
       <td style="width: 10rem;">
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#changeInfo">修改</button>

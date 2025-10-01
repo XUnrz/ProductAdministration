@@ -9,7 +9,7 @@
     {% if history %}
     <div class="container-md">
       <input type="text" name="daterange" value="" />
-      <button type="button" class="btn btn-primary" onclick="Saerch()">查询</button>
+      <button type="button" class="btn btn-primary" onclick="Search()">查询</button>
       &nbsp|&nbsp
       <button type="button" class="btn btn-primary" onclick="Export()">导出表格</button>
     </div>
@@ -71,7 +71,7 @@
     });
   });
 
-  function Saerch() {
+  function Search() {
     var start = $('input[name="daterange"]').data('daterangepicker').startDate.format('YYYY-MM-DD');
     var end = $('input[name="daterange"]').data('daterangepicker').endDate.format('YYYY-MM-DD');
     var url = '/stock/history/search?start=' + start + '&end=' + end;
@@ -91,6 +91,10 @@
       $('#history').empty();
       // 向表中添加新数据
       for (var i = 0; i < data.length; i++) {
+        // 排除除in和out的数据
+        if (data[i].type != 'in' && data[i].type != 'out') {
+          continue;
+        }
         // 转换时间显示方式Sat, 02 Aug 2025 10:53:27 GMT为2025-08-02 10:53:27
         var time = data[i].time;
         split = time.split(' ');
