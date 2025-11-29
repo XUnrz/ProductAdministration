@@ -167,6 +167,10 @@
   <label for="StockNum" class="form-label">输入数量</label>
   <input type="number" class="form-control" id="StockNum">
   </div>
+  <div class="input-group">
+  <span class="input-group-text">附加信息</span>
+  <textarea class="form-control" aria-label="ExtraInfo"></textarea>
+  </div>
 </div>
 <div class="modal-footer">
   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
@@ -285,6 +289,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var operation = document.querySelector('input[name="stockOperation"]:checked').value;
     var productId = document.getElementById("StockSelection").value;
     var quantity = document.getElementById("StockNum").value;
+    var extraInfo = document.querySelector('textarea[aria-label="ExtraInfo"]').value;
 
     if (!productId || productId === "暂无数据") {
       alert("请选择商品");
@@ -305,7 +310,8 @@ document.addEventListener('DOMContentLoaded', function() {
       },
       body: JSON.stringify({
         "id": productId,
-        "num": quantity
+        "num": quantity,
+        "extraInfo": extraInfo
       })
     }).then(function(response) {
       return response.json();
