@@ -23,6 +23,7 @@
       <th scope="col">操作商品</th>
       <th scope="col">操作类型</th>
       <th scope="col">数量</th>
+      <th scope="col">附加信息</th>
       <!-- {% if current_user.type == "admin" %}
       <th scope="col">操作</th>
       {% endif %} -->
@@ -36,7 +37,10 @@
     {% else %}
     {% for his in history %}
     <tr>
-      <th scope="row" id="historyTime">{{ his.time }}</th>
+      <!-- 时间显示处理一下 -->
+      <th scope="row" id="historyTime" style="width: fit-content;" class="time-cell" data-time="{{ his.time }}">
+        {{ his.time }}
+      </th>
       <td>{{ his.product_name }}</td>
       <td>
         {% if his.type == "in"  %}
@@ -46,6 +50,7 @@
         {% endif %}
       </td>
       <td>{{ his.amount }}</td>
+      <td>{{ his.info }}</td>
       <!-- {% if current_user.type == "admin" %}
       <td style="width: 10rem;">
         <button type="button" class="btn btn-primary" id="deleteHIst" onclick="deleteProduct()">删除</button>
@@ -69,7 +74,20 @@
     }, function(start, end, label) {
       console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
     });
+    
+    // 初始化时格式化所有时间显示
+    formatAllTimes();
   });
+
+  function formatAllTimes() {
+    $('.time-cell').each(function() {
+      var timeStr = $(this).data('time');
+      if (timeStr) {
+        var formattedTime = getTime(timeStr).split(' ')[0];
+        $(this).text(formattedTime);
+      }
+    });
+  }
 
   function Search() {
     var start = $('input[name="daterange"]').data('daterangepicker').startDate.format('YYYY-MM-DD');
@@ -97,8 +115,8 @@
         }
         // 转换时间显示方式Sat, 02 Aug 2025 10:53:27 GMT为2025-08-02 10:53:27
         var time = data[i].time;
-        split = time.split(' ');
-        time = split[3] + ' ' + split[2] + ' ' + split[1];
+        // 使用getTime函数格式化时间并只保留日期部分
+        time = getTime(time).split(' ')[0];
         // 转换in/out显示
         if (data[i].type == 'in') {
           data[i].type = '入库';
@@ -110,14 +128,14 @@
         var td1 = $('<td></td>');
         var td2 = $('<td></td>');
         var td3 = $('<td></td>');
-        // var td4 = $('<td></td>');
+        var td4 = $('<td></td>');
         // var td5 = $('<td></td>');
         th.text(time);
         td1.text(data[i].product_name);
         td2.text(data[i].type);
         td3.text(data[i].amount);
-        // td4.text(data[i].operator);
-        tr.append(th).append(td1).append(td2).append(td3);
+        td4.text(data[i].info);
+        tr.append(th).append(td1).append(td2).append(td3).append(td4);
         $('#history').append(tr);
 
       }
@@ -128,6 +146,10 @@
 
   function Export() {
     $('#history').tableExport({type:'excel'});
+  }
+
+  function getTime(time) {
+    return moment(time).format('YYYY-MM-DD HH:mm:ss');
   }
 </script>
 {% endblock %}

@@ -170,7 +170,8 @@ def stock_history_search():
         'product_name': history.product_name,
         'time': history.time,
         'type': history.type,
-        'amount': history.amount
+        'amount': history.amount,
+        'info': history.info
     } for history in history]
     return {
         'status': 'success',
@@ -400,7 +401,7 @@ def product_in():
             product.quantity += int(data['num'])
             product.save()
             history = HistoryORM.History(datetime.datetime.now(), data['id'], product.name, current_user.id, 'in',
-                                         int(data['num']))
+                                         int(data['num']),info=data['extraInfo'])
             history.save()
             return {
                 'status': "success",
@@ -433,7 +434,7 @@ def product_out():
             product.quantity -= int(data['num'])
             product.save()
             history = HistoryORM.History(time=datetime.datetime.now(), product_id=product.id, product_name=product.name,
-                                         user_id=current_user.id, type="out", amount=int(data['num']))
+                                         user_id=current_user.id, type="out", amount=int(data['num']),info=data['extraInfo'])
             history.save()
             return {
                 'status': "success",
