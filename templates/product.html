@@ -1,354 +1,351 @@
 {% extends "base.html" %}
 {% block title %}商品管理{% endblock %}
 {% block body %}
-<div class="container">
-  <table class="table table-striped-columns">
-    {% if current_user.type == "admin" %}
-    <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
-      <div class="btn-group me-2" role="group" aria-label="First group">
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newProduct">新建商品</button>
-        <button type="button" class="btn btn-primary" disabled>批量操作</button>
-      </div>
-      <div class="btn-group me-2" role="group" aria-label="Second group">
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#StockModal">出/入库</button>
-      </div>
-      <div class="btn-group" role="group" aria-label="Third group">
-        <button type="button" class="btn btn-primary" onclick="undo()">撤销</button>
-        <!-- <button type="button" class="btn btn-primary">重做</button> -->
-      </div>
-    </div>
-    {% else %}
-    <p class="h3">
-      核对信息
-    </p>
-    <div class="btn-group" role="group" aria-label="Third group">
-        <button type="button" class="btn btn-primary">信息无误</button>
-        <button type="button" class="btn btn-primary">信息有误</button>
-      </div>
-    {% endif %}
-    <br><br>
-  <thead>
-    <tr>
-      <th scope="col">ID</th>
-      <th scope="col">商品名称</th>
-      <th scope="col">库存</th>
-      {% if current_user.type == "admin" %}
-      <th scope="col">操作</th>
-      {% endif %}
-    </tr>
-  </thead>
-  <tbody id="product" style="padding: 1rem;">
-    {% if not products %}
-    <tr>
-      <th scope="row" colspan="5" style="text-align: center;">暂无数据</th>
-    </tr>
-    {% else %}
-    {% for product in products %}
-    <tr>
-      <th scope="row" id="productId">{{ product.id }}</th>
-      <td>{{ product.name }}</td>
-      <td>{{ product.quantity }}
-        <!-- <span class="badge bg-warning text-dark">Warning</span> -->
-      </td>
-      {% if current_user.type == "admin" %}
-      <td style="width: 10rem;">
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#changeInfo">修改</button>
-        <button type="button" class="btn btn-primary" id="deleteProduct" onclick="deleteProduct()">删除</button>
-      </td>
-      {% endif %}
-    </tr>
-    {% endfor %}
-    {% endif %}
-  </tbody>
-</table>
+<div class="layui-container">
+<link rel="stylesheet" href="/static/layui/css/layui.css">
+<div style="padding: 16px;"> 
+  <table class="layui-hide" id="table" lay-filter="table"></table>
 </div>
-
-{% if current_user.type == "admin" %}
-<!-- 模态框-新建商品 -->
-<div class="modal fade" id="newProduct" tabindex="-1" aria-labelledby="NewProduct" aria-hidden="true">
-<div class="modal-dialog">
-<div class="modal-content">
-<div class="modal-header">
-  <h5 class="modal-title" id="NewProduct">新建商品</h5>
-  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
-<div class="modal-body">
-  <!-- 输入商品详情信息 -->
-  <div class="form-floating mb-3">
-  <input type="text" class="form-control" id="productName" placeholder="输入商品名">
-  <label for="productName">输入商品名</label>
+<script type="text/html" id="toolbarDemo">
+  <div class="layui-btn-container">
+    <button class="layui-btn layui-btn-sm" id="newProduct" class="layui-btn" lay-on="newProduct-iframe-handle">新建商品</button>
+    <button class="layui-btn layui-btn-sm" id="doStock" class="layui-btn" lay-on="doStock">出/入库</button>
+    <button class="layui-btn layui-btn-sm" id="undo" class="layui-btn">撤销</button>
   </div>
-  <div class="form-floating mb-3">
-  <input type="number" class="form-control" id="stock" placeholder="输入库存">
-  <label for="stock">输入库存</label>
+</script>
+<script type="text/html" id="toolDemo">
+  <div class="layui-clear-space">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-xs" lay-event="more">
+      更多 
+      <i class="layui-icon layui-icon-down"></i>
+    </a>
   </div>
-  <div class="form-floating mb-3">
-  <input type="number" class="form-control" id="price1" placeholder="输入进货价">
-  <label for="price1">输入进货价</label>
-  </div>
-  <div class="form-floating mb-3">
-  <input type="number" class="form-control" id="price2" placeholder="输入零售价">
-  <label for="price2">输入零售价</label>
-  </div>
-  <div class="form-floating mb-3">
-  <input type="number" class="form-control" id="price3" placeholder="输入vip价">
-  <label for="price3">输入vip价</label>
-  </div>
-  <div class="form-floating mb-3">
-  <input type="number" class="form-control" id="price4" placeholder="输入市代价">
-  <label for="price4">输入市代价</label>
-  </div>
-  <div class="form-floating mb-3">
-  <input type="number" class="form-control" id="price5" placeholder="输入省代价">
-  <label for="price5">输入省代价</label>
-  </div>
-  <div class="form-floating mb-3">
-  <input type="number" class="form-control" id="price6" placeholder="输入总代价">
-  <label for="price6">输入总代价</label>
-  </div>
-</div>
-<div class="modal-footer">
-  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-  <button type="submit" class="btn btn-primary" onclick="newProducts()">提交</button>
-</div>
-</div>
-</div>
-</div>
-
-<!-- 模态框-修改商品信息 -->
-<div class="modal fade" id="changeInfo" tabindex="-1" aria-labelledby="ChangeInfo" aria-hidden="true">
-<div class="modal-dialog">
-<div class="modal-content">
-<div class="modal-header">
-  <h5 class="modal-title" id="ChangeInfo">修改商品信息</h5>
-  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-</div>
-<div class="modal-body">
-  <!-- TODO: 修改商品信息+获取信息 -->
-</div>
-<div class="modal-footer">
-  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-  <button type="submit" class="btn btn-primary" onclick="changeInfo()">提交</button>
-</div>
-</div>
-</div>
-</div>
-
-<!-- 模态框-库存操作(入库/出库) -->
-<div class="modal fade" id="StockModal" tabindex="-1" aria-labelledby="StockModal" aria-hidden="true">
-<div class="modal-dialog">
-<div class="modal-content">
-<div class="modal-header">
-  <h5 class="modal-title" id="StockModal">库存操作</h5>
-  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-</div>
-<div class="modal-body">
-  <div class="mb-3">
-    <label class="form-label">操作类型</label>
-    <div class="form-check">
-      <input class="form-check-input" type="radio" name="stockOperation" id="inStock" value="in" checked>
-      <label class="form-check-label" for="inStock">
-        入库
-      </label>
-    </div>
-    <div class="form-check">
-      <input class="form-check-input" type="radio" name="stockOperation" id="outStock" value="out">
-      <label class="form-check-label" for="outStock">
-        出库
-      </label>
-    </div>
-  </div>
-  <div class="mb-3">
-    <label for="StockSelection" class="form-label">选择商品</label>
-    <select class="form-select" aria-label="StockSelection" id="StockSelection">
-  </select>
-  </div>
-  <div class="mb-3">
-  <label for="StockNum" class="form-label">输入数量</label>
-  <input type="number" class="form-control" id="StockNum">
-  </div>
-</div>
-<div class="modal-footer">
-  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-  <button type="submit" class="btn btn-primary" id="stockOperation">提交</button>
-</div>
-</div>
-</div>
-</div>
-
+</script>
+<script src="/static/layui/layui.js"></script>
 <script>
-function newProducts() {
-    // 获取输入的商品名和库存
-    var productModal = new bootstrap.Modal(document.getElementById('newProduct'))
-    var productName = document.getElementById('productName').value;
-    var stock = document.getElementById('stock').value;
-    var price1 = document.getElementById('price1').value;
-    var price2 = document.getElementById('price2').value;
-    var price3 = document.getElementById('price3').value;
-    var price4 = document.getElementById('price4').value;
-    var price5 = document.getElementById('price5').value;
-    var price6 = document.getElementById('price6').value;
+layui.use(['table', 'dropdown'], function(){
+  var table = layui.table;
+  var dropdown = layui.dropdown;
+  
+  // 获取当前container-md宽度，并设置表格宽度
+  var container_width = $('.container-md').width();
 
-    // 更换数据类型
-    stock = parseInt(stock);
-    price1 = parseFloat(price1);
-    price2 = parseFloat(price2);
-    price3 = parseFloat(price3);
-    price4 = parseFloat(price4);
-    price5 = parseFloat(price5);
-    price6 = parseFloat(price6);
-    // 这里可以添加AJAX请求或其他逻辑来处理新建商品
-    // 传回后端
-    fetch('/product/add', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        name: productName,
-        stock: stock,
-        price1: price1,
-        price2: price2,
-        price3: price3,
-        price4: price4,
-        price5: price5,
-        price6: price6
-      })
-    }).then(function(response) { 
-      response.json().then(function(data) { 
-        if (data.code == 200) {
-          alert('添加成功！');
-          window.location.reload();
-        } else if (data.code == 400) {
-          alert('有相同商品！');
-        } else {
-          alert('添加失败！');
+  // 创建渲染实例
+  table.render({
+    elem: '#table',
+    url: '/product/info',
+    toolbar: '#toolbarDemo',
+    defaultToolbar: ['filter', 'exports', 'print'],
+    height: 'full*0.5', // 最大高度减去其他容器已占有的高度差
+    css: [ // 重设当前表格样式
+      '.layui-table-tool-temp{padding-right: 145px;}'
+    ].join(''),
+    cellMinWidth: 80,
+    totalRow: false, // 开启合计行
+    page: true,
+    cols: [[
+      {field:'id',fixed:'left', width:80, title: 'ID', sort: table},
+      {field:'name', width:(container_width*0.65), title: '商品名'},
+      {field:'quantity', width:(container_width*0.1), title: '数量'},
+      {title:'操作', width:(container_width*0.1), minWidth: 125, templet: '#toolDemo'}
+    ]],
+    done: function(){
+      var id = this.id;
+      // 行模式
+      dropdown.render({
+        elem: '#rowMode',
+        data: [{
+          id: 'default-row',
+          title: '单行模式（默认）'
+        },{
+          id: 'multi-row',
+          title: '多行模式'
+        }],
+        // 菜单被点击的事件
+        click: function(obj){
+          var checkStatus = table.checkStatus(id)
+          var data = checkStatus.data; // 获取选中的数据
+          switch(obj.id){
+            case 'default-row':
+              table.reload('test', {
+                lineStyle: null // 恢复单行
+              });
+              layer.msg('已设为单行');
+            break;
+            case 'multi-row':
+              table.reload('test', {
+                // 设置行样式，此处以设置多行高度为例。若为单行，则没必要设置改参数 - 注：v2.7.0 新增
+                lineStyle: 'height: 95px;' 
+              });
+              layer.msg('即通过设置 lineStyle 参数可开启多行');
+            break;
+          }
         }
       });
-})
-    
-  }
-
-function deleteProduct() {
-  if (confirm("确定要删除该商品吗？")) {
-    var button = event.target;
-    var row = button.closest('tr');
-    var id = row.querySelector('#productId').innerText;
-
-    parseInt(id);
-
-    console.log(id);
-    
-
-    fetch('/product/delete', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        id: id
-      })
-    }).then(function(response) {
-      return response.json();
-}).then(function(data) {
-      if (data.code == 200) {
-        alert('删除成功！');
-        window.location.reload();
-      } else {
-        alert('删除失败！');
-      }
-    });
-  }
-}
-
-// 新增库存操作功能
-document.addEventListener('DOMContentLoaded', function() {
-  var stockModal = document.getElementById('StockModal');
-  stockModal.addEventListener('show.bs.modal', function () {
-    var selection = document.getElementById("StockSelection");
-    var product = document.getElementById("product");
-
-    if (product.children[0].innerText === "暂无数据") {
-        selection.disabled = true;
-        selection.innerHTML = "<option selected>暂无数据</option>";
-    } else {
-      // 获取数据
-      selection.innerHTML = "<option selected disabled hidden>选择商品</option>";
-      for (var i = 0; i < product.children.length; i++) {
-          selection.innerHTML += '<option value="'+product.children[i].children[0].innerText+'">' + product.children[i].children[1].innerText + "</option>";
-      }
+    },
+    error: function(res, msg){
+      console.log(res, msg)
     }
   });
-
-  // 库存操作提交
-  document.getElementById("stockOperation").addEventListener("click", function() {
-    var operation = document.querySelector('input[name="stockOperation"]:checked').value;
-    var productId = document.getElementById("StockSelection").value;
-    var quantity = document.getElementById("StockNum").value;
-
-    if (!productId || productId === "暂无数据") {
-      alert("请选择商品");
-      return;
+  
+  // 工具栏事件
+  table.on('toolbar(table)', function(obj){
+    var id = obj.config.id;
+    var checkStatus = table.checkStatus(id);
+    var othis = lay(this);
+    switch(obj.event){
+      case 'getCheckData':
+        var data = checkStatus.data;
+        layer.alert(layui.util.escape(JSON.stringify(data)));
+        break;
+      case 'getData':
+        var getData = table.getData(id);
+        console.log(getData);
+        layer.alert(layui.util.escape(JSON.stringify(getData)));
+        break;
+    };
+  });
+  // 表头自定义元素工具事件 --- 2.8.8+
+  table.on('colTool(table)', function(obj){
+    var event = obj.event;
+    console.log(obj);
+    if(event === 'email-tips'){
+      layer.alert(layui.util.escape(JSON.stringify(obj.col)), {
+        title: '当前列属性选项'
+      });
     }
-
-    if (!quantity || quantity <= 0) {
-      alert("请输入有效的数量");
-      return;
+  });
+  
+  // 触发单元格工具事件
+  table.on('tool(table)', function(obj){ // 双击 toolDouble
+    var data = obj.data; // 获得当前行数据
+    // console.log(obj)
+    if(obj.event === 'edit'){
+      layer.open({
+        title: '编辑 - id:'+ data.id,
+        type: 1,
+        area: ['80%','80%'],
+        content: '<div style="padding: 16px;">自定义表单元素</div>'
+      });
+    } else if(obj.event === 'more'){
+      // 更多 - 下拉菜单
+      dropdown.render({
+        elem: this, // 触发事件的 DOM 对象
+        show: true, // 外部事件触发即显示
+        data: [{
+          title: '查看',
+          id: 'detail'
+        },{
+          title: '删除',
+          id: 'del'
+        }],
+        click: function(menudata){
+          if(menudata.id === 'detail'){
+            layer.msg('查看操作，当前行 ID:'+ data.id);
+          } else if(menudata.id === 'del'){
+            layer.confirm('真的删除 '+ data.name +' 么', function(index){
+              // 先请求删除
+              fetch('/product/delete',{
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  id: data.id
+                })
+              }).then(function(res){ 
+                return res.json();
+              }).then(function(data){ 
+                if(data.code === 200){
+                  layer.msg('删除成功');
+                  obj.del(); // 删除对应行（tr）的DOM结构，并更新缓存
+                } else {
+                  layer.msg(data.message);
+                }
+              });
+            });
+          } 
+        },
+        id: 'dropdown-table-tool',
+        align: 'right', // 右对齐弹出
+        style: 'box-shadow: 1px 1px 10px rgb(0 0 0 / 12%);' // 设置额外样式
+      });
     }
-
-    var endpoint = operation === "in" ? "/product/in" : "/product/out";
-
-    fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        "id": productId,
-        "num": quantity
-      })
-    }).then(function(response) {
-      return response.json();
-    }).then(function(data) {
-      if (data.code == 200) {
-        alert(operation === "in" ? "入库成功！" : "出库成功！");
-        window.location.reload();
-      } else if (data.code == 400) {
-        alert("没有这个商品！");
-      } else {
-        alert("操作失败！");
+  });
+  // table 滚动时移除内部弹出的元素
+  var tableInst = table.getOptions('table');
+  tableInst.elem.next().find('.layui-table-main').on('scroll', function() {
+    dropdown.close('dropdown-table-tool');
+  });
+ 
+  // 触发表格复选框选择
+  table.on('checkbox(table)', function(obj){
+    console.log(obj)
+  });
+ 
+  // 触发表格单选框选择
+  table.on('radio(table)', function(obj){
+    console.log(obj)
+  });
+  
+  // 行单击事件
+  table.on('row(table)', function(obj){
+    //console.log(obj);
+    //layer.closeAll('tips');
+  });
+  // 行双击事件
+  table.on('rowDouble(table)', function(obj){
+    console.log(obj);
+  });
+ 
+  // 单元格编辑事件
+  table.on('edit(table)', function(obj){
+    var field = obj.field; // 得到字段
+    var value = obj.value; // 得到修改后的值
+    var data = obj.data; // 得到所在行所有键值
+    // 值的校验
+    if(field === 'email'){
+      if(!/^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/.test(obj.value)){
+        layer.tips('输入的邮箱格式不正确，请重新编辑', this, {tips: 1});
+        return obj.reedit(); // 重新编辑 -- v2.8.0 新增
       }
-    }).catch(function(error) {
-      console.error('Error:', error);
-      alert("操作失败！");
-    });
+    }
+    // 编辑后续操作，如提交更新请求，以完成真实的数据更新
+    // …
+    layer.msg('编辑成功', {icon: 1});
+    
+    // 其他更新操作
+    var update = {};
+    update[field] = value;
+    obj.update(update);
   });
 });
-
-function undo() {
-  if (confirm("确定要撤销此操作吗？")){
-    fetch('/product/undo', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    })
-    .then(function(response) {
-      return response.json();
-    }).then(function(data) {
-      if (data.code == 200) {
-        alert("操作成功！");
-        location.reload();
-      } else if (data.code == -2) {
-        alert("没有历史记录！");
-      } else {
-        alert("操作失败！");
-      }
-    })
-  }
-  
+layui.use(function(){
+  var $ = layui.$;
+  var layer = layui.layer;
+  var util = layui.util;
+  // 事件
+  util.on('lay-on', {
+    'newProduct-iframe-handle': function(){
+      layer.open({
+        title: '新增商品',
+        type: 2,
+        area: ['23rem', '40rem'],
+        content: '/static/newProduct.html',
+        // fixed: false, // 不固定
+        maxmin: true,
+        shadeClose: true,
+        btn: ['获取表单值', '取消'],
+        btnAlign: 'c',
+        yes: function(index, layero){
+          // 获取 iframe 的窗口对象
+          var iframeWin =  window[layero.find('iframe')[0]['name']];
+          
+          // 获取表单数据
+          var name = iframeWin.$('#name');
+          var quantity = iframeWin.$('#quantity');
+          var price1 = iframeWin.$('#price1');
+          var price2 = iframeWin.$('#price2');
+          var price3 = iframeWin.$('#price3');
+          var price4 = iframeWin.$('#price4');
+          var price5 = iframeWin.$('#price5');
+          var price6 = iframeWin.$('#price6');
+          var value = name.val();
+          if($.trim(value) === '') return name.focus();
+          // 提交表单
+          fetch('/product/add', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              name: name.val(),
+              stock: quantity.val(),
+              price1: price1.val(),
+              price2: price2.val(),
+              price3: price3.val(),
+              price4: price4.val(),
+              price5: price5.val(),
+              price6: price6.val()
+            })
+          }).then(function(res) {
+            return res.json();
+            }).then(function(data) {
+              if(data.code === 200) {
+                layer.close(index);
+                layer.msg(data.message, {icon: 1});
+                // 刷新表格，重载到最后一页
+                table.reload('table', {
+                  page: {
+                    curr: table.cache['table'].length
+                  }
+                });
+              } else {
+                layer.msg(data.message, {icon: 2});
+              }
+            }).catch(function(err) {
+              layer.msg(data.message, {icon: 2})
+})
+        }
+      });
+    },
+  })
+  util.on('lay-on', {
+    'doStock': function(){
+      layer.open({
+        title: '商品出/库',
+        type: 2,
+        area: ['23rem', '40rem'],
+        content: '/static/doStock.html',
+        // fixed: false, // 不固定
+        maxmin: true,
+        shadeClose: true,
+        btn: ['提交', '取消'],
+        btnAlign: 'c',
+        yes: function(index, layero){
+          // 获取 iframe 的窗口对象
+          var iframeWin =  window[layero.find('iframe')[0]['name']];
+          // 获取出入库类型
+          var product_lst = iframeWin.$('#product_lst');
+          var doStock = iframeWin.$('input[name="doStock"]:checked').val();
+          var quantity = iframeWin.$('#quantity');
+          // 获取商品id
+          var product_id = product_lst.find('option:selected').attr('value');
+          var value = product_lst.val();
+          if($.trim(value) === '') return product_lst.focus();
+          if($.trim(quantity.val()) === '') return quantity.focus();
+          // 提交表单
+          fetch('/product/in', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              product_id: product_lst.val(),
+              doStock: doStock,
+              quantity: quantity.val()
+            })
+          }).then(function(res) {
+            return res.json();
+          }).then(function(data) { 
+            if(data.code === 200) {
+              layer.close(index);
+              layer.msg(data.message, {icon: 1});
+              // 刷新表格
+              table.reload('table');
+            } else {
+              layer.msg(data.message, {icon: 2});
+            }
+})
 }
-
+      })
+    },
+  })
+});
+  
 </script>
-{% endif %}
+</div>
+
 {% endblock %}

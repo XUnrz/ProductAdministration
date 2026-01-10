@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 import config, ProductORM, UsersORM, HistoryORM
-import datetime, backup
+import datetime, backup,json
 from extension import init_ext
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
 
@@ -72,7 +72,34 @@ def login():
         else:
             flash('用户名或密码错误！')
             return redirect(url_for('login'))
-    return render_template('login.html')
+    return render_template('layui_login.html')
+
+
+# layui界面登录页
+@app.route('/layui_login', methods=['GET', 'POST'])
+def layui_login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        user = UsersORM.Users.query.filter_by(username=username).first()
+        # 查询用户状态，如果是disabled则禁止登陆
+        if user and user.type == 'disabled':
+            return {
+                'code': -1,
+                'msg': '用户被禁用！'
+            }
+        if user and user.password == password:
+            login_user(user)
+            return {
+                'code': 200,
+                'msg': '登陆成功！'
+            }
+        else:
+            return {
+                'code': -1,
+                'msg': '用户名或密码错误！'
+            }
+    return render_template('layui_login.html')
 
 
 # 退出
@@ -87,24 +114,8 @@ def logout():
 @app.route('/product')
 @login_required
 def product():
-    # 读取商品数据
-    products = ProductORM.Product.query.all()
-    # 解析数据
-    products_lst = []
-    for product in products:
-        products_lst.append({
-            'id': product.id,
-            'name': product.name,
-            'price1': product.price1,
-            'price2': product.price2,
-            'price3': product.price3,
-            'price4': product.price4,
-            'price5': product.price5,
-            'price6': product.price6,
-            'quantity': product.quantity
-        })
-    # print(products_lst)
-    return render_template('product.html', products=products)
+    return render_template('product.html')
+
 
 
 # 库存管理
@@ -226,6 +237,20 @@ def settings_update():
     elif request.method == 'GET':  # 后端回传请求
         return render_template('update.html', ver=config.app_ver)
 
+# 数据库管理
+@app.route('/settings/database')
+def settings_database():
+    from sqlalchemy import inspect
+    with app.app_context():
+        inspector = inspect(db.engine)
+        tables = inspector.get_table_names()
+        # 筛选以product开头的表
+        product_tables = [table for table in tables if table.startswith('product')]
+        # 获取表信息
+        product_tables_info = [inspector.get_columns(table) for table in product_tables]
+    print(product_tables_info)
+    return render_template('database.html', tables=product_tables,tables_info=product_tables_info)
+
 
 # 添加商品(私有api)
 @app.route('/product/add', methods=['POST'])
@@ -307,6 +332,61 @@ def product_delete():
             'message': "参数错误",
             'code': -1
         }
+
+# 获取商品信息(私有api)
+@app.route('/product/info', methods=['GET'])
+@login_required
+def product_info():
+    """
+    获取方式post
+    ?page=1&limit=10
+    """
+    # 检查分页
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('limit', 10, type=int)
+    # 检查all
+    all = request.args.get('all', False, type=bool)
+    if all:
+        products = ProductORM.Product.query.all()
+        # 处理数据为json
+        products = [{
+            'id': product.id,
+            'name': product.name,
+        } for product in products]
+        return {
+                'status': "success",
+                'message': "获取成功",
+                'code': 0,
+                'count': len(products),
+                'data': products
+            }
+    else:
+        products = ProductORM.Product.query.paginate(page=page, per_page=per_page,error_out=False)
+        # 解析数据
+        products_lst = []
+        """
+        商品id
+        商品名称
+        商品数量
+        页数
+        每页数量
+        总数
+        """
+        for product in products:
+            products_lst.append({
+                'id': product.id,
+                'name': product.name,
+                'quantity': product.quantity,
+            })
+        return json.dumps(
+            {
+                'status': "success",
+                'message': "获取成功",
+                'code': 0,
+                'count': products.total+1,
+                'data': products_lst
+            }
+        )
 
 
 # 入库(私有api)

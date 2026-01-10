@@ -1,0 +1,50 @@
+<link rel="stylesheet" href="/static/layui/css/layui.css">
+<body>
+<div class="layui-container"></div>
+<div style="padding: 16px;"> 
+    <div class="layui-form">
+        <input type="radio" name="doStock" value="1" title="出库">
+        <input type="radio" name="doStock" value="2" title="入库">
+        <div style="padding-top: 16px">
+        <select id="product_lst">
+            <option value="">请选择商品</option>
+        </select>
+        <div class="layui-input-group" style="padding-top: 16px;width: 100%;">
+            <div class="layui-input-split layui-input-prefix">
+              输入数量
+            </div>
+            <input type="number" placeholder="" class="layui-input" id="quantity">
+        </div>
+        <div class="layui-input-group" style="padding-top: 16px;width: 100%;">
+            <div class="layui-input-split layui-input-prefix">
+                附加信息
+            </div>
+            <textarea name="" placeholder="" class="layui-textarea"></textarea>
+          </div>
+        </div>
+    </div>
+</div>
+</body>
+<script src="/static/layui/layui.js"></script>
+<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<script>
+// 初始化数据
+var product_lst = undefined;
+var form = layui.form;
+
+$.ajax({
+url: '/product/info?all=true',
+type: 'GET',
+dataType: 'json',
+success: function(data) {
+    product_lst = data['data'];
+    for (var i = 0; i < product_lst.length; i++) {
+        $('#product_lst').append('<option value="' + product_lst[i].id + '">' + product_lst[i].name + '</option>');
+    }
+    form.render('select');
+},
+error: function(xhr, status, error) {
+    layui.msg(xhr.responseText);
+}
+});
+</script>

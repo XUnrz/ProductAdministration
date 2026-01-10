@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}
+设置 - 数据库管理
+{% endblock %}
+
+{% block body %}
+<div class="container-md">
+    <p class="h3">数据库管理</p>
+    <br>
+    {% if current_user.type == 'admin' %}
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newDatabase">新建数据表</button>
+        <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th scope="col">数据表名称</th>
+            <th scope="col">包含项</th>
+            <th scope="col">操作</th>
+          </tr>
+        </thead>
+        <tbody style="padding: 1rem;">
+            {% for i in range(tables|length) %}
+            <tr></tr>
+              <th scope="row">{{ tables[i] }}</th>
+              <td>{{ (tables_info[i]|length)-1 }}</td>
+              <td style="width: 10rem;">
+                <button type="button" class="btn btn-primary" onclick="window.location.href='#'">查看</button>
+                <button type="button" class="btn btn-primary" onclick="deleteDatabase({{ tables[i] }})">删除</button>
+              </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+    {% else %}
+    <p class="h3">权限不足</p>
+    {% endif %}
+</div>
+
+<!-- 新建数据表模态框 -->
+<div class="modal fade" id="newDatabase" tabindex="-1" aria-labelledby="newDatabase" aria-hidden="true">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header">
+    <h5 class="modal-title" id="newDatabase">新建数据表</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+    <form>
+        <div class="form-floating mb-3">
+        <input type="text" class="form-control" id="floatingInput" placeholder="">
+        <label for="floatingInput">数据表名称</label>
+        </div>
+        <hr>
+        <button type="button" class="btn btn-primary btn-sm" onclick="newColumn()">新建表项</button>
+        <div id="database-info" class="container-md">
+            
+            <div class="container-fluid" style="padding: 1rem;">
+                <div class="row">
+                    <div class="col-md-auto">
+                        <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="floatingInput" placeholder="">
+                        <label for="floatingInput">数据表名称</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                        <select class="form-select" id="floatingSelect" aria-label="Floating label select example">
+                        <option selected disabled>选择类型</option>
+                        <option value="1">整数</option>
+                        <option value="2">小数</option>
+                        <option value="3">文本</option>
+                        </select>
+                        <label for="floatingSelect">建议价格选择小数</label>
+                        </div>
+                    </div>
+                    <div class="col-md-auto" style="text-align: center;">
+                        <button type="button" class="btn btn-primary" onclick="deleteColumn()">删除</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="form-text">必须要有主键id</div>
+    </form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+    <button type="button" class="btn btn-primary" onclick="newDatabase()">保存</button>
+</div>
+</div>
+</div>
+</div>
+
+{% endblock %}
